@@ -1,0 +1,88 @@
+
+\title{Fixing up Scanned PDFs}
+\date{}
+
+\begin{document}
+
+\tableofcontents
+
+\section{Requirements}
+
+Install the following tools:
+\begin{code}
+imagemagick
+pdfsandwich
+scantailor
+\end{code}
+You probably already have \ilname{imagemagick}.
+
+Say you have a scanned PDF file \ilfile{scan.pdf}.
+Move it to a new directory and go to that directory.
+
+\section{Steps}
+
+Assume we have one or more PDFs in a directory \ilfile{/path/to/scan/}.
+
+\subsection{Convert Scanned PDF(s) to Images}
+
+First we must get some images from the scanned PDF.
+
+\quicksec{Option 1: pdfimages}
+Try running:
+\begin{code}
+ls -U | grep -a -e '\.[Pp][Dd][Ff]$' | \
+while read -r f
+do
+  g=$(printf '%s' "$f" | sed -e 's/\.[^.]*$//')
+  pdfimages "$f" "$g"
+done
+\end{code}
+The output images are in \ilfile{.pbm} or \ilfile{.ppm} format, depending on if they have color or not.
+Take a look at these images, if they are not 1 image per page, then you'll have to do \textbf{option 2}.
+
+The tool we use in the next step does not recognize Netpbm formats, so convert the images to \ilfile{.png} files.
+\begin{code}
+ls -U | grep -a -e '\.p[bp]m$' | \
+while read -r f
+do
+  g=$(printf '%s' "$f" | sed -e 's/\.[^.]*$//')
+  pnmtopng "$f" > "$g".png
+done
+\end{code}
+
+\quicksec{Option 2: imagemagick}
+This option takes a longer time and will not correlate exactly with the original scan.
+\begin{code}
+ls -U | grep -a -e '\.[Pp][Dd][Ff]$' | \
+while read -r f
+do
+  g=$(printf '%s' "$f" | sed -e 's/\.[^.]*$//')
+  convert -density 400 "$f" "$g".png
+done
+\end{code}
+
+\subsection{Make It Pretty}
+
+Run \ilcode{scantailor} and create a new project in the directory with all of the \ilfile{.png} files.
+Let the output directory be \ilfile{out/}.
+This tool lets you reorient the pages, split them, make text darker, etc.
+It is very helpful for file size and OCR.
+
+After fixing up the formatting and exporting, stitch together the output images into \ilfile{all.pdf}.
+\begin{code}
+{ ls -v out/*.tif ; echo all.tif ; } | xargs -d '\n' tiffcp
+tiff2pdf -o all.pdf -u m -p "letter" -F all.tif
+\end{code}
+You can also specify a title and author for the PDF using the \ilflag{-t} and \ilflag{-a} flags respectively.
+
+\subsection{Recognize Text}
+
+Here we use the \ilname{pdfsandwich} tool to do OCR.
+This runs \ilname{tesseract} in the background using multiple processes if available.
+Just run the following command to make a (hopefully) text-searchable \ilfile{final.pdf}.
+\begin{code}
+pdfsandwich -o final.pdf all.pdf
+\end{code}
+
+\end{document}
+
