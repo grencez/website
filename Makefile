@@ -8,6 +8,8 @@ tex2web = tex2web
 TexFiles = \
 	index \
 	tut/pdfscan \
+	tut/gentoo-install \
+
 
 HtmlPaths = \
 	tut

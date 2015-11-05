@@ -1,0 +1,303 @@
+
+\title{Gentoo Install Notes}
+\date{2014.03.05}
+
+\begin{document}
+
+\tableofcontents
+
+\section{Prepare the Disk}
+
+\subsection{Partition Disk}
+
+Start fdisk to work on \ilcode{/dev/sda}
+\begin{code}
+fdisk /dev/sda
+\end{code}
+
+Create boot partition by following:
+\begin{code}
+new -> primary -> 1st partition 
+  -> start at default ->  end 256 MB later
+  -> p -> 1 -> -> +256M
+\end{code}
+make it bootable
+\begin{code}
+a -> 1
+\end{code}
+
+Create swap partition
+\begin{code}
+n -> p -> 2 -> -> +512M
+\end{code}
+Set its type to "Linux Swap"
+\begin{code}
+t -> 2 -> 82
+\end{code}
+
+Create root parition taking up the rest
+\ilcode{n -> p -> 3 -> ->}
+\\finally, write
+\ilcode{w}
+
+\subsection{Format the Partitions}
+
+Boot partition as ext3
+\begin{code}
+mkfs.ext3 /dev/sda1
+\end{code}
+Create and activate swap
+\begin{code}
+mkswap /dev/sda2
+swapon /dev/sda2
+\end{code}
+Make \ilcode{sda3} an ext4 filesystem
+\begin{code}
+mkfs.ext4 /dev/sda3
+\end{code}
+
+\subsection{Mount the Partitions}
+\begin{code}
+mount /dev/sda3 /mnt/gentoo
+mkdir /mnt/gentoo/boot
+mount /dev/sda1 /mnt/gentoo/boot
+\end{code}
+
+\subsection{Get Gentoo System}
+Boot up \ilcode{links} and go to \url{http://www.gentoo.org/main/en/mirrors.xml}
+choose a mirror, and get stage3 tarball at \ilcode{releases/x86/2007.0/stages/} press \ilcode{d} to download
+
+Do a checksum:
+\begin{code}
+md5sum -c stage3-i686-2007.0.tar.bz2.DIGESTS
+\end{code}
+
+Untar the tarball:
+\begin{code}
+tar xvjpf stage3-*.tar.bz2 -C /mnt/gentoo
+\end{code}
+The options mean:
+\begin{code}
+x - extract, v - verbose, 
+j - decompress with bzip2, p - preserve permissions,
+f - extract a file
+\end{code}
+Sometimes you want to leave the verbose part out when using a slow terminal
+
+Do the same with Portage from
+\begin{code}
+snapshots/portage-latest.tar.bz2
+\end{code}
+but untar with the command
+\begin{code}
+tar xvjf portage-latest.tar.bz2 -C /mnt/gentoo/usr
+\end{code}
+
+Choose mirrors
+\begin{code}
+mirrorselect -i -o >> /mnt/gentoo/etc/portage/make.conf
+mirrorselect -i -r -o >> /mnt/gentoo/etc/portage/make.conf
+\end{code}
+
+\subsection{Copy DNS Info}
+\begin{code}
+cp -L /etc/resolv.conf /mnt/gentoo/etc/
+\end{code}
+(the -L option ensures no symbolic link)
+
+\subsection{Mount /proc and /dev}
+\begin{code}
+mount -t proc none /mnt/gentoo/proc
+mount -o bind /dev /mnt/gentoo/dev
+\end{code}
+
+\section{Configure the System}
+
+\subsection{Chroot into Gentoo}
+change root from \ilcode{/} to \ilcode{/mnt/gentoo}
+\begin{code}
+chroot /mnt/gentoo /bin/bash
+\end{code}
+create new environment (variables)
+\begin{code}
+env-update
+\end{code}
+load environment variables
+\begin{code}
+source /etc/profile
+export PS1="(chroot) $PS1"
+\end{code}
+
+\subsection{Update Portage Tree}
+to the latest version
+\begin{code}
+emerge --sync
+\end{code}
+for slow console...
+\begin{code}
+emerge --sync --quiet
+\end{code}
+
+\subsection{Kernel Setup}
+get kernel
+\begin{code}
+emerge -q gentoo-sources
+\end{code}
+and make it (with -s for silent)
+\begin{code}
+cd /usr/src/linux
+make menuconfig
+make -s && make -s modules_install
+\end{code}
+copy kernel image to /boot
+\begin{code}
+cp arch/x86_64/boot/bzImage /boot/kernel-3.13.5
+\end{code}
+Use whatever kernel version is appropriate in the name.
+
+\subsection{Specify Modules to Autoload}
+List modules for autoloading in \ilcode{/etc/modules.autoload.d/kernel-2.6}
+to view all available:
+\begin{code}
+find /lib/modules/<kernel version>/ \
+  -type f -iname '*.o' -or -iname '*.ko'
+\end{code}
+
+\subsection{Create fstab}
+Syntax:
+  <partition> <mount point> <filesystem> <mount options> <needs dump> <fsk>
+this example's options
+\begin{code}
+/dev/sda1    /boot       ext3 defaults,noatime 1 2
+/dev/sda2    none        swap sw 0 0
+/dev/sda3    /           ext4 noatime 0 1
+/dev/cdrom   /mnt/cdrom  auto noauto,usr 0 0
+\end{code}
+
+\subsection{Configure the Network}
+Name your computer by putting the following line in \ilcode{/etc/conf.d/hostname}.
+\begin{code}
+HOSTNAME="bat-masterson"
+\end{code}
+
+%#domain:
+%# /etc/conf.d/net
+%# dns_domain_lo="homenetwork"
+%
+%#To get automatic ip through dhcp, edit
+%#  /etc/conf.d/net
+%#and add the lines
+%#  config_eth0=( "dhcp" )
+%#  dhcp_eth0="nodns nontp nonis"
+%
+%#Start network at Boot
+%#  rc-update add net.eth0 default
+
+Define hosts that aren't resolved by the nameserver by editing \ilcode{/etc/hosts}.
+\begin{code}
+127.0.0.1       localhost       bat-masterson
+::1             localhost
+\end{code}
+
+\subsection{Get PCMCIA working}
+\begin{code}
+emerge pcmciautils
+\end{code}
+
+\subsection{Set root password}
+\begin{code}
+passwd
+\end{code}
+
+System Information
+\begin{code}
+/etc/rc.conf
+\end{code}
+
+
+\section{Install Other Stuff}
+
+\subsection{System Logger}
+\begin{code}
+emerge syslog-ng
+rc-update add syslog-ng default
+\end{code}
+
+\subsection{Cron Daemon}
+Among others, you can use \ilcode{dcron}, \ilcode{fcron}, or \ilcode{vixie-cron} for this, but I chose \ilcode{vixie-cron}.
+\begin{code}
+emerge vixie-cron
+rc-update add vixie-cron default
+\end{code}
+if dcron or fcron, also do
+\begin{code}
+crontab /etc/crontab
+\end{code}
+
+\subsection{File Indexing}
+for the locate tool
+\begin{code}
+emerge mlocate
+\end{code}
+
+\subsection{File System Tools}
+possi-ex: xfsprogs, reiserfsprogs, jfsutils
+\begin{code}
+emerge reiserfsprogs
+\end{code}
+
+\subsection{DHCP Client}
+\begin{code}
+emerge dhcpcd
+\end{code}
+
+\subsection{Framebuffer}
+find info in \ilcode{/usr/src/linux/Documentation/fb/vesafb.txt}
+\begin{code}
+emerge vesafb-tng
+\end{code}
+
+\subsection{GRUB Setup}
+First install Grub.
+\begin{code}
+emerge grub
+\end{code}
+
+Set up grub through grub-install
+first setup \ilcode{/etc/mtab}
+\begin{code}
+grep -v rootfs /proc/mounts > /etc/mtab
+\end{code}
+With \ilcode{/boot} still mounted, install Grub.
+\begin{code}
+grub2-install /dev/sda
+grub2-mkconfig -o /boot/grub/grub.cfg
+\end{code}
+This second command should be rerun any time you install a new kernel.
+It reads some settings from \ilcode{/etc/default/grub}.
+
+\section{Finalize the Install}
+
+\subsection{Reboot into new System}
+tidy up a little first
+\begin{code}
+exit
+cd
+umount /mnt/gentoo/boot /mnt/gentoo/dev /mnt/gentoo/proc /mnt/gentoo
+reboot
+\end{code}
+
+\subsection{Add User}
+
+\begin{code}
+useradd -m grencez
+\end{code}
+
+\section{Commands}
+Describe the USE flags for a specific package.
+\begin{code}
+equery --nocolor uses =sys-devel/llvm-3.3-r1 -a
+\end{code}
+
+\end{document}
+
