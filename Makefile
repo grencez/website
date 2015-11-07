@@ -7,6 +7,10 @@ tex2web = tex2web
 
 TexFiles = \
 	index \
+	tut/index \
+	tut/git \
+	tut/ssh \
+	tut/prelim \
 	tut/pdfscan \
 	tut/gentoo-install \
 

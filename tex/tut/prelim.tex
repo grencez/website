@@ -1,0 +1,26 @@
+
+\title{How to Read}
+%\author{}
+\date{}
+
+\begin{document}
+\section{Shell}
+The commands in my tutorials assume a POSIX-compliant shell.
+So if your default shell is \ilname{tcsh}, then please type
+\begin{code}
+bash
+\end{code}
+before executing any commands.
+
+\section{Variables}
+I often use shell variables instead of dummy names in command examples so that someone can set those variables and then copy/paste the commands.
+(It's not great practice to do this from untrusted sources on the internet, but there's your \textbf{disclaimer}.)
+So, if my guide says to assume \ilcode{user=my_awesome_username}, and your username is ``leethaxor'', then you should run
+\begin{code}
+user=leethaxor
+\end{code}
+before running the commands after that.
+Those commands will substitute orrences of \ilcode{$user} or \ilcode{${user}} with \ilcode{leethaxor}.
+
+\end{document}
+

@@ -1,0 +1,192 @@
+
+\title{Getting by with Git}
+%\author{}
+\date{}
+
+\begin{document}
+
+\tableofcontents
+
+For this document, assume \ilcode{$proj} is defined as something like:
+\begin{code}
+proj=my_awesome_project
+host=grencez@myserver.net
+\end{code}
+The following instructions show how to set up a git repository \ilcode{${host}:~/repo/${proj}.git} and use a local copy on your own machine \ilcode{~/code/${proj}}.
+
+\section{Set up a Repository}
+
+\subsection{Global Settings}
+It is important for people to know who you are when committing changes.
+Create a file \ilfile{~/.gitconfig} (by typing \ilcode{gedit ~/.gitconfig} in a terminal) which contains appropriate lines:
+\begin{code}
+[user]
+  name = Alex Klinkhamer
+  email = grencez@youknowthedomain.edu
+[push]
+  default = matching
+\end{code}
+
+\subsection{Making a Repository}
+
+Code shouldn't just be stored on one machine because the hard drive may crash or we may have multiple work machines.
+Therefore, we should make a repository on a server that all of our machines can access.
+\begin{code}
+ssh $host
+mkdir -p ~/repo/${proj}.git
+cd ~/repo/${proj}.git
+\end{code}
+
+\quicksec{Private}
+If this is a project just for you, then all we need to do is initialize the repository.
+\begin{code}
+git init --bare
+\end{code}
+
+\quicksec{Public}
+If this is a project should be shared with everyone, we must allow people to get to the repository and make it readable and writable by everyone.
+\begin{code}
+chmod a+x ~/ ~/repo
+git init --bare --shared=0666
+\end{code}
+
+\quicksec{Shared with Group}
+Usually a public repository isn't the greatest idea because anyone on the machine can messs with your code.
+If you have the luxury of having a group containing all members, we can restrict access to the group.
+Let it be defined as \ilcode{group=my_group}.
+\begin{code}
+chmod a+x ~/ ~/repo
+chgrp $group .
+chmod g+rwxs .
+git --bare init --shared=group
+\end{code}
+
+\section{Basic Usage}
+This section describes the minimal amount of knowledge you need to use git.
+Note that some commands (\ilcode{git pull} and \ilcode{git push}) assume some default values which were set by \ilcode{git clone}.
+
+\subsection{Check out Code}
+
+Back on your own machine, get a copy of the repository using \ilcode{git clone}.
+\begin{code}
+mkdir -p ~/code
+cd ~/code
+git clone ${host}:~/repo/${proj}.git
+cd $proj
+\end{code}
+
+If you're a member of someone else's project (say, \ilcode{friend=alex}), the \ilcode{clone} command will need to reference their home directory on the server:
+\begin{code}
+git clone ${host}:~${friend}/repo/${proj}.git
+\end{code}
+
+After this initial \ilcode{clone}, it is simple to pull changes other people have made.
+\begin{code}
+git pull
+\end{code}
+
+\subsection{Check in Code}
+To add a new file to version control:
+\begin{code}
+git add $file
+\end{code}
+
+To see what files have been added, modified, or are not tracked by git, use the status command.
+\begin{code}
+git status
+\end{code}
+
+To commit all of your changes:
+\begin{code}
+git commit -a
+\end{code}
+This will open an editor so you can explain your changes in a \textit{commit message}.
+The editor is determined by the \ilcode{$EDITOR} environment variable, which is probably \ilcode{nano} by default... pretty easy to use.
+If you only have a short message and don't want to work in an editor, the message may be specified directly.
+\begin{code}
+git commit -a -m 'Fix size_t comparison warnings'
+\end{code}
+
+One can also change the most recent commit or its message (\textbf{ONLY DO THIS IF THE COMMIT HAS NOT BEEN PUSHED}).
+\begin{code}
+git commit -a --amend
+\end{code}
+
+Finally, push your changes to the repository, otherwise nobody will see them!
+\begin{code}
+git push origin master
+\end{code}
+If you're not pushing to an empty repository, the following shorthand does the same thing.
+\begin{code}
+git push
+\end{code}
+
+\subsection{Misc File Operations}
+Add file, remove file, move file, or discard changes.
+\begin{code}
+git add new-file.c
+git rm unwanted-file.c
+git mv old-file.c new-file.c
+git checkout HEAD file-with-changes.c
+\end{code}
+
+If you previously added a file and want to remove it, you must be rather forceful.
+\begin{code}
+git rm -f --cached unwanted-file.c
+\end{code}
+
+See previous commit messages.
+\begin{code}
+git log
+\end{code}
+
+\section{Working with Others}
+The above instructions are fine for working by yourself, but what about when others are making changes concurrently?
+
+If \ilcode{git push} complains about your copy not being up to date, you'll need to do a \ilcode{git pull}.
+However, there could be conflicts!
+(\textbf{TODO}: I don't have enough experience to give advice here.)
+
+If you have uncommitted changes and wish to pull new changes from a teammate, first stash your changes, then have them automatically merged.
+(Merges don't always go cleanly though, so copy your changes elsewhere just in case.)
+\begin{code}
+git stash save
+git pull
+git stash pop
+\end{code}
+
+\section{A Note on Commit Messages}
+Most commits do warrant some description.
+Imagine if your changes broke something, and someone else (or ``future you'') is tasked with fixing it.
+Without a meaningful commit message to read, that person doesn't know your intent in making those original changes, and their change may break something else!
+(Side note: Use tests to protect your code from others.)
+
+A commit message should be formatted with the first line being a short description (cut off at 50 characters), followed by an empty line, and then more detailed explanation.
+For example, this is one of mine:
+\begin{code}
+Add normal mapping to raytracer
+
+1. In the raytraced version, one can now specify a normal map in
+   object coordinates to give the illusion of a more complex surface.
+  a. material.c/h  map_normal_texture()
+  a. wavefront-file.c  readin_wavefront()
+  a. raytrace.c  fill_pixel()
+     - This function is getting too complicated...
+
+2. When determining the normal of the track's surface, be sure the damn
+   thing is normalized! This only affects tracks without vertex normals.
+  b. motion.c  apply_track_gravity()
+
+3. Clean up some parse code with the addition of a new macro.
+  a. util.h  AccepTok()
+  c. wavefront-file.c
+    + readin_wavefront()
+    + readin_materials()
+  c. dynamic-setup.c  readin_Track()
+\end{code}
+This is just my style, but I describe changes in order of priority and hierarchically by: intent (number prefix), file (letter prefix), function or class (`+' prefix, or on same line if there's room), and extra description (`-' prefix).
+The letter prefixes signify the type of change: \textit{c} means change code, \textit{b} means bug fix, \textit{a} means add code (new functionality), \textit{r} means remove code, and \textit{d} means comment/documentation changes (if the file also contains code).
+This format works pretty well, though the letters may be a bit pedantic (former colleagues used a `*' prefix instead).
+
+\end{document}
+
