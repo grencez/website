@@ -121,6 +121,20 @@ If you're not pushing to an empty repository, the following shorthand does the s
 git push
 \end{code}
 
+If you still need arguments, you can set the defaults manually with \ilcode{git-config}.
+\begin{code}
+ git config branch.master.merge refs/heads/master
+ git config branch.master.remote origin
+\end{code}
+To see other options:
+\begin{code}
+ git config -l
+\end{code}
+To edit other options:
+\begin{code}
+ git config -e
+\end{code}
+
 \subsection{Misc File Operations}
 Add file, remove file, move file, or discard changes.
 \begin{code}

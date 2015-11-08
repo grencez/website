@@ -11,6 +11,7 @@ TexFiles = \
 	tut/git \
 	tut/ssh \
 	tut/prelim \
+	tut/qemu \
 	tut/pdfscan \
 	tut/gentoo-install \
 

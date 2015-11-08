@@ -1,0 +1,131 @@
+
+\title{QEMU Notes}
+\date{}
+
+\begin{document}
+
+\tableofcontents
+
+\textbf{In progress.}
+
+\begin{code}
+qemu-kvm -snapshot -display vnc=:2 Metasploitable.vmdk
+\end{code}
+
+\begin{code}
+qemu-img create -f qcow2 windows-dev.img 100G
+qemu-system-i386 -hda windows-dev.img -cdrom xp-installer.img -boot d
+qemu-system-i386 -m 1G -net nic,model=rtl8139 -net user -hda windows-dev.img
+\end{code}
+
+\section{Resize a VMDK Image}
+(1) Convert to raw
+\begin{code}
+qemu-img convert -f vmdk orig.vmdk -O raw orig.raw
+\end{code}
+(2) Create an empty raw image
+\begin{code}
+qemu-img create -f raw temp.raw 100M
+\end{code}
+(3) Combine
+\begin{code}
+cat orig.raw tmp.raw > resized.raw
+\end{code}
+(4) Convert back to original format
+\begin{code}
+qemu-img convert -f raw resized.raw -O vmdk resized.vmdk
+\end{code}
+
+\section{Mount Image}
+\begin{code}
+sudo modprobe nbd
+\end{code}
+First partition
+\begin{code}
+sudo qemu-nbd -c /dev/nbd1 -P1 windows-dev.img
+\end{code}
+Mount it
+\begin{code}
+sudo mount /dev/nbd1 /mnt/WIND
+\end{code}
+
+
+\section{Resize QCOW Image}
+Variables used!
+\begin{code}
+img_a=windows-dev.img
+img_b=/mnt/FIRE/vm/windows-dev-P1.img
+dev_a=/dev/nbd1
+dd_blocksz=16M
+\end{code}
+size you want the filesystem to be (base 10)
+\begin{code}
+size=21G
+# max size of qemu image (base 2... I don't know how to make it consistent)
+\begin{code}
+max_size=21G
+\end{code}
+
+Need to ensure the network block device module is available.
+\begin{code}
+sudo modprobe nbd
+\end{code}
+Associate the first partition of your image with a network block device.
+\begin{code}
+sudo qemu-nbd -c $dev_a -P1 $img_a
+\end{code}
+Resize file system
+\begin{code}
+sudo ntfsresize -s $size $dev_a
+\end{code}
+
+\section{Create New Image}
+\begin{code}
+qemu-img create -f qcow2 $img_b 1
+sudo qemu-nbd -c $dev_b $img_b
+\end{code}
+Set up partitions, ensure the starting offsets are the same as in \ilcode{$img_a}.
+\begin{code}
+sudo fdisk $dev_b
+sudo qemu-nbd -c $dev_b -P1 $img_b
+\end{code}
+
+Resize the partition.
+We have to first associate the network block device with the whole image.
+\begin{code}
+sudo qemu-nbd -d $dev_a
+sudo qemu-nbd -c $dev_a $img_a
+\end{code}
+Edit the partition table (you can use GParted instead of fdisk).
+\begin{code}
+sudo fdisk $dev_a
+\end{code}
+Be sure to keep the start offset the same.
+If it's giving 2048 instead of 63, you need the DOS label.
+Re-associate only the first partition with the network block device.
+\begin{code}
+sudo qemu-nbd -d $dev_a
+sudo qemu-nbd -c $dev_a -P1 $img_a
+\end{code}
+
+Copy the partition to a temporary location.
+\begin{code}
+sudo dd if=$dev_a of=$dev_b conv=count_bytes bs=$dd_blocksz count=${size}B
+\end{code}
+
+Create a new image
+\begin{code}
+sudo qemu-nbd -d $dev_a
+rm $img_a
+qemu-img create -f qcow2 $img_a 40G
+\end{code}
+Set up its partition table properly.
+\begin{code}
+sudo qemu-nbd -c $dev_a $img_a
+sudo fdisk $dev_a
+sudo qemu-nbd -d $dev_a $img_a
+\end{code}
+
+
+\end{document}
+
