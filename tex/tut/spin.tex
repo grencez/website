@@ -1,0 +1,96 @@
+
+\title{Spin Model Checker}
+%\author{}
+\date{}
+
+\begin{document}
+
+\section{Installation}
+%First download the source code from
+%\url{http://spinroot.com/spin/Src/index.html}
+
+What follows are copy-pasteable commands to make \ilcode{spin} and \ilcode{ispin} valid commands.
+To copy and paste: highlight the commands, middle click in a terminal, and hit enter so the last command is executed too.
+
+Download, build, and set up \ilname{spin}, do the following.
+(Change \ilcode{pkg=spin645.tar.gz} to reflect the current version number.)
+\begin{code}
+bash
+pkg=spin645.tar.gz
+mkdir -p "$HOME/bin"
+mkdir -p "/tmp/ccspin-$USER"
+cd "/tmp/ccspin-$USER"
+wget http://spinroot.com/spin/Src/$pkg
+tar xf $pkg
+cd Spin/Src*
+make
+cp -f spin "$HOME/bin/spin"
+cp -f ../iSpin/ispin.tcl "$HOME/bin/ispin"
+cd "$HOME/bin"
+rm -r "/tmp/ccspin-$USER"
+chmod +x spin ispin
+mkdir -p spinshare
+curl 'https://raw.githubusercontent.com/grencez/protocon/master/s/{spinsafe,spinlive,spinltl,spinplay,spinshare/spinclude.sh}' -o '#1'
+chmod +x spinsafe spinlive spinltl spinplay
+exit
+\end{code}
+
+\section{Path Setup}
+
+Finally, you might need to set up your path to include \ilfile{~/bin/}.
+Run the following:
+\begin{code}
+echo "${PATH}" | grep -o -e "$HOME/bin" | sed -e 's/^.*$/All is well!/'
+\end{code}
+If it prints \ilcode{All is well!}, then your installation is finished.
+Otherwise, continue reading.
+
+If you use the \ilname{bash} shell run the following:
+\begin{code}
+echo 'export PATH=$HOME/bin:$PATH' >> $HOME/.bashrc
+\end{code}
+If you use the \ilname{tcsh} shell or don't know (it's the default shell at Michigan Tech), run the following:
+\begin{code}
+bash
+echo 'setenv PATH "${HOME}/bin:${PATH}"' >> $HOME/.cshrc
+exit
+\end{code}
+The changes may not take effect unless you log out and log in again.
+But after that, the commands \ilcode{spin}, \ilcode{ispin}, \ilcode{spinsafe}, \ilcode{spinlive}, and \ilcode{spinltl} should work!
+
+\section{Vim Settings}
+
+If you use Vim, the following will set up indentation and syntax.
+\begin{code}
+bash
+mkdir -p ~/.vim
+cd ~/.vim
+mkdir -p indent syntax
+wget cs.mtu.edu/~apklinkh/drop/vim-promela.tar.gz
+tar xf vim-promela.tar.gz
+rm vim-promela.tar.gz
+cp -t indent vim-promela/indent/promela.vim
+cp -t syntax vim-promela/syntax/promela.vim
+rm -r vim-promela
+echo 'autocmd BufNewFile,BufRead *.pml set ft=promela sw=2 ts=2' >> filetype.vim
+exit
+\end{code}
+
+If you don't have a \ilfile{~/.vimrc} already, this will make it:
+\begin{code}
+bash
+cd "$HOME"
+echo 'set nocompatible' >> .vimrc
+echo 'filetype on' >> .vimrc
+echo 'filetype plugin indent on' >> .vimrc
+echo 'syntax enable' >> .vimrc
+exit
+\end{code}
+
+If you have no idea what's going on with this editor:
+\begin{code}
+vimtutor
+\end{code}
+
+\end{document}
+

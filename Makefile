@@ -10,6 +10,7 @@ TexFiles = \
 	tut/index \
 	tut/git \
 	tut/ssh \
+	tut/spin \
 	tut/prelim \
 	tut/qemu \
 	tut/pdfscan \
