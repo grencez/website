@@ -1,0 +1,20 @@
+
+\newcommand{\AKA}{a.k.a.}
+
+\begin{document}
+
+A distributed system (\AKA protocol) normally provides some service within a set of legitimate states.
+A \textit{self-stabilizing} system converges to this intended behavior from any state, even from states where all data is randomized by transient faults.
+My PhD work shows that automatically designing (\AKA synthesizing) stabilization is NP-complete, and verifying stabilization is undecidable when the protocol must scale to arbitrarily many processes.
+Even so, I had some success in designing protocols using a backtracking synthesis algorithm.
+These results are all in my \href{limpract.pdf}{dissertation}, and the synthesis algorithm is implemented in an open-source tool called
+\href{https://github.com/grencez/protocon}{Protocon} (see \href{http://asd.cs.mtu.edu/projects/protocon}{its homepage} for more info).
+
+My focus thus far has been on protocols with very simple processes.
+This is a necessity for Protocon's synthesis algorithm, since it can only realistically find a solution when process domains are small.
+In this work, I have grown to appreciate \href{https://en.wikipedia.org/wiki/Emergence}{emergent} properties of a system, where the simple components perform some more complicated task.
+We can view legitimate states/behavior as emergent properties of a self-stabilizing system, which relies on simple processes to create order from chaos (arbitrary initial state).
+This view assumes processes are simple, which is the case for many good papers on self-stabilizing protocols because simple processes make analysis easier (yet it is still quite hard).
+With this in mind, I will focus more on protocols that can apply to \href{https://en.wikipedia.org/wiki/Self-reconfiguring_modular_robot}{modular robots}, as they will inevitably get smaller and become resource-constrained.
+
+\end{document}

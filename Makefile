@@ -7,6 +7,8 @@ tex2web = tex2web
 
 TexFiles = \
 	index \
+	selfstabiliz/index \
+	tut/encrypt \
 	tut/index \
 	tut/git \
 	tut/ssh \
@@ -18,7 +20,7 @@ TexFiles = \
 
 
 HtmlPaths = \
-	tut
+	selfstabiliz tut
 
 HtmlFiles = \
 	$(addsuffix .html,$(addprefix html/,$(TexFiles)))

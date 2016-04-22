@@ -1,0 +1,95 @@
+
+\title{Encryption}
+\date{}
+
+\begin{document}
+
+\tableofcontents
+
+
+\section{GnuPG}
+
+Encrypt a secret file using a passphrase.
+\begin{code}
+gpg -o encrypted.txt.gpg -c secret.txt
+# Type passphrase.
+\end{code}
+
+Decrypt with a a passphrase.
+\begin{code}
+gpg -o decrypted.txt -d encrypted.txt.gpg
+# Type passphrase.
+\end{code}
+
+
+\section{Cryptsetup}
+
+\subsection{Encrypt Disk Image File with a Passphrase}
+
+Create and encrypt the disk image.
+In this case it is 50 megabytes and only uses a 256 bit AES cipher.
+It is probably better to use a mix of ciphers.
+\begin{code}
+head -q -c 50MB /dev/urandom > secret.img
+/sbin/cryptsetup -q --cipher aes --key-size 256 luksFormat secret.img
+# Need to enter passphrase here.
+\end{code}
+Then as root (using sudo), format the file system.
+\begin{code}
+sudo cryptsetup luksOpen secret.img secretimg
+# Type passphrase.
+sudo mkfs.ext4 /dev/mapper/secretimg
+sudo cryptsetup luksClose secretimg
+\end{code}
+
+Now mounting to \ilfile{/mnt/point/} will involve:
+\begin{code}
+sudo cryptsetup luksOpen secret.img secretimg
+# Type passphrase.
+sudo mount /dev/mapper/secretimg /mnt/point
+\end{code}
+
+And unmounting involves:
+\begin{code}
+sudo umount /mnt/point
+sudo cryptsetup luksClose secretimg
+\end{code}
+
+% No more need for losetup.
+%losetup /dev/loop/0 secret.img
+%losetup -d /dev/loop/0 secret.img
+
+
+\subsection{Encrypt Physical Device with a Key File}
+
+A key file is essentially a longer password that is stored in a file.
+For something like an encrypted backup drive, using a key file makes backing up more seamless since no password is required.
+It may be reasonable to assume that an attacker will not have access to your own computer, so a key file can even improve security!
+
+The steps are mostly the same, but we must generate a random key and specify it with the \ilflag{--key-file} when invoking \ilcode{cryptsetup}.
+In this case, we use the variable \ilcode{$secretdev} to hold \ilfile{/dev/sdc1}, but it could just as well be \ilfile{secret.img} as before.
+
+\begin{code}
+secretdev=/dev/sdc1
+secretkey=secret.keyfile
+mappedname=secretdev
+head -q -c 2K /dev/random > $secretkey
+sudo cryptsetup -q --cipher aes --key-size 256 --key-file $secretkey luksFormat $secretdev
+sudo cryptsetup --key-file $secretkey luksOpen $secretdev $mappedname
+sudo mkfs.ext4 /dev/mapper/$mappedname
+sudo cryptsetup luksClose $mappedname
+\end{code}
+
+That's all there is to it!
+
+
+%For kernel...
+%\begin{code}
+%title Gentoo Linux 2.6.30
+%root (hd0,0)
+%kernel /boot/bzImage-2.6.30 root=/dev/ram0 ramdisk=8192 crypt_root=/dev/sda2
+%initrd /boot/initramfs-genkernel-x86_64-2.6.30
+%\end{code}
+
+\end{document}
+
