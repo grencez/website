@@ -32,7 +32,7 @@ It is probably better to use a mix of ciphers.
 \begin{code}
 head -q -c 50MB /dev/urandom > secret.img
 /sbin/cryptsetup -q --cipher aes --key-size 256 luksFormat secret.img
-# Need to enter passphrase here.
+# Type passphrase.
 \end{code}
 Then as root (using sudo), format the file system.
 \begin{code}
@@ -71,11 +71,11 @@ In this case, we use the variable \ilcode{$secretdev} to hold \ilfile{/dev/sdc1}
 
 \begin{code}
 secretdev=/dev/sdc1
-secretkey=secret.keyfile
+keyfile=secret.keyfile
 mappedname=secretdev
-head -q -c 2K /dev/random > $secretkey
-sudo cryptsetup -q --cipher aes --key-size 256 --key-file $secretkey luksFormat $secretdev
-sudo cryptsetup --key-file $secretkey luksOpen $secretdev $mappedname
+head -q -c 2048 /dev/random > $keyfile
+sudo cryptsetup -q --cipher aes --key-size 256 --key-file $keyfile luksFormat $secretdev
+sudo cryptsetup --key-file $keyfile luksOpen $secretdev $mappedname
 sudo mkfs.ext4 /dev/mapper/$mappedname
 sudo cryptsetup luksClose $mappedname
 \end{code}
