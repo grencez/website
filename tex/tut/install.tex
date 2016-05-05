@@ -71,8 +71,13 @@ cd ~/local/src && rm -fr $pkg stow-latest.tar.gz
 
 %pkg=$(ls -AU1 | grep -axEe 'stow-[0-9.]+' | sort -Vr | head -n1)
 
-\section{Build/Install a Program}
+\section{Normal Procedure}
 
+\subsection{Build/Install}
+
+The idea for build/install is basically what you're used to, but we have to specify an installation path of \ilfile{~/local/stow/$pkg}, rather than the default \ilfile{/usr/local}.
+
+\quicksec{Using Configure Script}
 A project that uses a standard \ilcode{./configure && make && make install} process can be installed using the following steps.
 \begin{code}
 ./configure --prefix ~/local/stow/$pkg
@@ -82,6 +87,7 @@ stow $pkg
 \end{code}
 See \href{#sec:eg:configure}{this full example}.
 
+\quicksec{Using CMake}
 For projects using \ilname{cmake}, follow this pattern.
 \begin{code}
 mkdir bld && cd bld
@@ -92,9 +98,17 @@ stow $pkg
 \end{code}
 See \href{#sec:eg:cmake}{this full example}.
 
+\subsection{Uninstall}
 
-\section{Full Examples}
-\subsection{Using Configure}
+To uninstall a package, we simply invoke the \ilcode{stow -D} command to remove symlinks from \ilfile{~/local/}, then we manually remove the installed files.
+It looks like this:
+\begin{code}
+cd ~/local/stow
+stow -D $pkg
+rm -fr $pkg
+\end{code}
+
+\subsection{Example Using Configure Script}
 \label{sec:eg:configure}
 
 Here is an example of installing the \ilname{espresso} logic minimization tool.
@@ -114,7 +128,7 @@ stow $pkg
 cd ~/local/src && rm -fr $pkg ${pkg}.tar.gz
 \end{code}
 
-\subsection{Using CMake}
+\subsection{Example Using CMake}
 \label{sec:eg:cmake}
 
 Here is an example of installing the \ilname{curl} tool that we have used to download files.
