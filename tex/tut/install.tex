@@ -1,0 +1,139 @@
+
+\title{Install Program as a Normal User}
+%\author{}
+\date{}
+
+\begin{document}
+
+\tableofcontents
+
+If you are a user on a Linux/Unix system without root privileges, you'll probably run into a scenario where you want to install a program that the administrator does not care to install system-wide.
+Continue reading to learn how to do such an installation yourself.
+
+
+\section{Initial Setup}
+
+\subsection{Create Directories}
+
+Run the following command.
+\begin{code}
+mkdir -p ~/bin ~/local/opt ~/local/src ~/local/stow
+\end{code}
+For projects with sensible installation steps (e.g., \ilcode{${pkg}}), we can download/build in \ilfile{~/local/src/${pkg}/}, install to \ilfile{~/local/stow/${pkg}/}, then use \ilname{stow} to symbolically link the installed files to their various locations in \ilfile{~/local/bin/}, \ilfile{~/local/lib/}, etc.
+In this way, we can remove \ilfile{~/local/src/${pkg}/} without forgetting which files were installed, since they all reside in \ilfile{~/local/stow/${pkg}/}.
+
+If a project \ilcode{${pkg}} does not have a standard install, then we put it in \ilfile{~/local/opt/${pkg}/} and symbolically link to its executable from \ilfile{~/bin/}.
+Or simply move the executable to \ilfile{~/bin/}.
+This procedure works well enough for me anyway.
+
+\subsection{Set the PATH Environment Variable}
+\label{sec:PATH}
+
+The \ilcode{${PATH}} environment variable holds a colon-delimited list of directories where executables should be found.
+See what it is now by typing \ilcode{echo ${PATH}}.
+We want to make sure that \ilfile{~/bin/} and \ilfile{~/local/bin/} are there.
+
+If you use the \ilname{bash} shell (find out using \ilcode{echo ${SHELL}}), then run the following:
+\begin{code}
+printf '%s\n' 'export PATH="${HOME}/bin:${HOME}:/local/bin:${PATH}"' >> ~/.bashrc
+\end{code}
+The changes may not take effect unless you log out and log in again.
+To check, remember to \ilcode{echo ${PATH}}.
+
+If you use a \ilname{csh}-based shell like \ilname{tcsh}, then run the following (or preferably switch to something less terrible):
+\begin{code}
+bash
+printf '%s\n' 'setenv PATH "${HOME}/bin:${HOME}/local/bin:${PATH}"' >> "${HOME}/.cshrc"
+exit
+\end{code}
+Note that the other steps of this tutorial require \ilname{bash} or some other POSIX-compliant shell.
+
+\subsection{Install Stow}
+
+The \ilname{stow} (or \ilname{xstow}) program may already be installed, check by running \ilcode{which stow}.
+If it is missing, let's install it:
+
+\begin{code}
+cd ~/local/src
+curl -O http://ftp.gnu.org/gnu/stow/stow-latest.tar.gz
+tar xf stow-latest.tar.gz
+pkg=$(ls -Avr | grep -m1 -axEe 'stow-[0-9.]+')
+cd $pkg
+
+./configure --prefix ~/local/stow/$pkg
+make
+make install
+
+cd ~/local/stow
+./${pkg}/bin/stow $pkg
+cd ~/local/src && rm -fr $pkg stow-latest.tar.gz
+\end{code}
+
+%pkg=$(ls -AU1 | grep -axEe 'stow-[0-9.]+' | sort -Vr | head -n1)
+
+\section{Build/Install a Program}
+
+A project that uses a standard \ilcode{./configure && make && make install} process can be installed using the following steps.
+\begin{code}
+./configure --prefix ~/local/stow/$pkg
+make && make install
+cd ~/local/stow
+stow $pkg
+\end{code}
+See \href{#sec:eg:configure}{this full example}.
+
+For projects using \ilname{cmake}, follow this pattern.
+\begin{code}
+mkdir bld && cd bld
+cmake -DCMAKE_INSTALL_PREFIX="${HOME}/local/stow/${pkg}" ..
+make && make install
+cd ~/local/stow
+stow $pkg
+\end{code}
+See \href{#sec:eg:cmake}{this full example}.
+
+
+\section{Full Examples}
+\subsection{Using Configure}
+\label{sec:eg:configure}
+
+Here is an example of installing the \ilname{espresso} logic minimization tool.
+\begin{code}
+cd ~/local/src
+pkg=espresso-ab-1.0
+curl -O https://eqntott.googlecode.com/files/${pkg}.tar.gz
+tar xf ${pkg}.tar.gz
+cd $pkg
+
+./configure --prefix ~/local/stow/$pkg
+make
+make install
+
+cd ~/local/stow
+stow $pkg
+cd ~/local/src && rm -fr $pkg ${pkg}.tar.gz
+\end{code}
+
+\subsection{Using CMake}
+\label{sec:eg:cmake}
+
+Here is an example of installing the \ilname{curl} tool that we have used to download files.
+\begin{code}
+cd ~/local/src
+pkg=curl-7.48.0
+curl -O https://curl.haxx.se/download/${pkg}.tar.gz
+tar xf ${pkg}.tar.gz
+cd $pkg
+
+mkdir bld && cd bld
+cmake -DCMAKE_INSTALL_PREFIX="${HOME}/local/stow/${pkg}" ..
+make -j4
+make install
+
+cd ~/local/stow
+stow $pkg
+cd ~/local/src && rm -fr $pkg ${pkg}.tar.gz
+\end{code}
+
+\end{document}
+

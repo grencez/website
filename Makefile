@@ -17,6 +17,7 @@ TexFiles = \
 	tut/qemu \
 	tut/pdfscan \
 	tut/gentoo-install \
+	tut/install \
 
 
 HtmlPaths = \

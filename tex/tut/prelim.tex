@@ -4,6 +4,7 @@
 \date{}
 
 \begin{document}
+
 \section{Shell}
 The commands in my tutorials assume a POSIX-compliant shell.
 So if your default shell is \ilname{tcsh}, then please type
@@ -20,7 +21,10 @@ So, if my guide says to assume \ilcode{user=my_awesome_username}, and your usern
 user=leethaxor
 \end{code}
 before running the commands after that.
-Those commands will substitute orrences of \ilcode{$user} or \ilcode{${user}} with \ilcode{leethaxor}.
+Those commands will substitute occurrences of \ilcode{${user}} with \ilcode{leethaxor}.
+
+I often write \ilcode{${user}} or even \ilcode{"${user}"} for clarity/safety because many commands are meant to be copy/pasted.
+When typing it yourself, it's usually fine to just use \ilcode{$user} if the string does not contain spaces (e.g., a username should not).
 
 \end{document}
 
