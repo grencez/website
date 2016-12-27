@@ -270,8 +270,8 @@ grep -v rootfs /proc/mounts > /etc/mtab
 \end{code}
 With \ilcode{/boot} still mounted, install Grub.
 \begin{code}
-grub2-install /dev/sda
-grub2-mkconfig -o /boot/grub/grub.cfg
+grub-install /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
 \end{code}
 This second command should be rerun any time you install a new kernel.
 It reads some settings from \ilcode{/etc/default/grub}.

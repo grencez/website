@@ -1,0 +1,47 @@
+
+\title{The Z3 SMT Solver}
+%\author{}
+\date{}
+
+\begin{document}
+
+See \url{http://z3.codeplex.com/}.
+
+Easy mode for Windows/Linux: \url{http://www.fdi.ucm.es/profesor/fernan/ACIDE/html/z3.html}\\
+The specific distribution of Linux doesn't actually matter.\\
+Literally just do that and skip everything else.
+
+\section{Installation}
+
+We will install \ilname{z3} using \ilname{stow}, so first follow the \href{install.html}{instructions here}.
+\begin{code}
+cd ~/local/src
+git clone https://github.com/Z3Prover/z3.git
+cd z3
+hash=$(git rev-parse --short HEAD)
+pkg=z3-${hash}
+./configure --prefix ~/local/stow/$pkg
+cd build
+make -j4
+make install
+cd ~/local/stow
+stow $pkg
+\end{code}
+
+\subsection{Editing}
+
+If you're using VIM, put this as the last line any file:
+\begin{code}
+; vim: ft=lisp:lw+=define-fun,forall,exists:
+\end{code}
+Or do it properly by putting the following line in \ilfile{~/.vim/filetype.vim}:
+\begin{code}
+autocmd BufRead,BufNewFile *.smt2 set ft=lisp lisp lw+=define-fun,forall,exists
+\end{code}
+
+\section{Using It}
+
+Follow this interactive tutorial: \url{http://rise4fun.com/Z3/tutorial/guide}
+
+\end{document}
+

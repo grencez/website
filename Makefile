@@ -18,6 +18,7 @@ TexFiles = \
 	tut/pdfscan \
 	tut/gentoo-install \
 	tut/install \
+	tut/z3 \
 
 
 HtmlPaths = \
