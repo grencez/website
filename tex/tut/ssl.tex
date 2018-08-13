@@ -1,0 +1,55 @@
+
+\title{Generate a Signed SSL Certificate}
+\date{}
+
+\begin{document}
+
+\section{What is This?}
+
+If your website doesn't use SSL (HTTPS), then it is bad and wrong.
+Without SSL, someone on the network can see exactly what a user is doing on the site.
+For security, a trusted third party has to vouch for your public SSL key so that users know they are talking to your site.
+This page gives you easy-mode Linux commands to set up SSL.
+
+\section{Initial Configuration}
+
+First grab the client code.
+\begin{code}
+git clone https://github.com/lukas2511/dehydrated.git
+cd dehydrated
+\end{code}
+
+Next generate some config files using your \ilcode{$domain}.
+\begin{code}
+domain=yourdomain.net
+echo 'WELLKNOWN=$PWD/public_html/.wellknown/acme-challenge' > config.sh
+echo "$domain www.$domain" > domains.txt
+\end{code}
+
+\section{Generating Keys}
+
+Use \ilname{sshfs} to mount our server's \ilfile{public_html} directory on your local machine.
+The following generates SSL keys in \ilfile{certs/$domain/}.
+\begin{code}
+# Regenererate SSL keys.
+rm -fr certs
+mkdir -p public_html
+sshfs $domain:public_html public_html
+./dehydrated -c -f config.sh
+fusermount -u public_html
+\end{code}
+
+Now install the keys.
+I have to go to \ilname{http://$domain/cpanel}, login, click SSL/TLS, click Manage SSL sites, select my domain, and then copy/paste the \ilfile{cert.pem} and \ilfile{privkey.pem} files into the Certificate and Private Key fields.
+The file contents can quickly be copied using the first two \ilname{xsel} command.
+\begin{code}
+cd certs/*/
+cat cert.pem | xsel -b
+cat privkey.pem | xsel -b
+echo 'nothing to see here' | xsel -b  # Clear the clipboard selection.
+\end{code}
+
+Don't forget to do a \ilcode{git pull origin master} every once in a while to keep the client code updated.
+
+\end{document}
+

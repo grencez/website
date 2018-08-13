@@ -12,6 +12,7 @@ TexFiles = \
 	tut/index \
 	tut/git \
 	tut/ssh \
+	tut/ssl \
 	tut/spin \
 	tut/prelim \
 	tut/qemu \
