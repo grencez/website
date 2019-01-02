@@ -22,7 +22,7 @@ cd dehydrated
 Next generate some config files using your \ilcode{$domain}.
 \begin{code}
 domain=yourdomain.net
-echo 'WELLKNOWN=$PWD/public_html/.wellknown/acme-challenge' > config.sh
+echo 'WELLKNOWN=$PWD/public_html/.well-known/acme-challenge' > config.sh
 echo "$domain www.$domain" > domains.txt
 \end{code}
 
@@ -35,12 +35,13 @@ The following generates SSL keys in \ilfile{certs/$domain/}.
 rm -fr certs
 mkdir -p public_html
 sshfs $domain:public_html public_html
+mkdir -p public_html/.well-known/acme-challenge
 ./dehydrated -c -f config.sh
 fusermount -u public_html
 \end{code}
 
 Now install the keys.
-I have to go to \ilname{http://$domain/cpanel}, login, click SSL/TLS, click Manage SSL sites, select my domain, and then copy/paste the \ilfile{cert.pem} and \ilfile{privkey.pem} files into the Certificate and Private Key fields.
+I have to go to \ilname{http://$domain/cpanel}, login, click SSL/TLS, click Install and Manage SSL, select my domain, and then copy/paste the \ilfile{cert.pem} and \ilfile{privkey.pem} files into the Certificate and Private Key fields.
 The file contents can quickly be copied using the first two \ilname{xsel} command.
 \begin{code}
 cd certs/*/
