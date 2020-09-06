@@ -33,7 +33,7 @@ HtmlPaths := $(addsuffix /,html $(addprefix html/,$(HtmlPaths)))
 all: $(HtmlFiles)
 
 define ensurepath
-html/$(1).html: tex/$(1).tex
+html/$(1).html: src/$(1).tex
 	$(tex2web) -x $$< -o $$@
 	chmod 0644 $$@
 
@@ -52,5 +52,5 @@ clean:
 	rm -fr html
 
 install: all
-	rsync -prt html/ grencez.net:./public_html/
+	rsync -prt html/ grencez.net:/srv/grencez.net/http/
 
