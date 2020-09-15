@@ -7,7 +7,7 @@ This seemed harder than it should be.
 First I created a new user for Steam with appropriate permissions.
 
 ```shell
-sudo seradd --user-group --create-home --shell /bin/false grencez-for-games
+sudo useradd --user-group --create-home --shell /bin/false grencez-for-games
 # Give permission to play sound.
 sudo usermod -a -G audio grencez-for-games
 ```
