@@ -5,11 +5,13 @@ default: all
 
 tex2web = tex2web
 
-TexFiles = \
+SrcHtmlFiles = \
+	tut/gentoo-install \
+
+SrcTexFiles = \
 	index \
 	selfstabiliz/index \
 	tut/encrypt \
-	tut/index \
 	tut/git \
 	tut/ssh \
 	tut/ssl \
@@ -17,7 +19,6 @@ TexFiles = \
 	tut/prelim \
 	tut/qemu \
 	tut/pdfscan \
-	tut/gentoo-install \
 	tut/install \
 	tut/z3 \
 
@@ -26,11 +27,23 @@ HtmlPaths = \
 	selfstabiliz tut
 
 HtmlFiles = \
-	$(addsuffix .html,$(addprefix html/,$(TexFiles)))
+	$(addsuffix .html,$(addprefix html/,$(SrcTexFiles) $(SrcHtmlFiles)))
 
 HtmlPaths := $(addsuffix /,html $(addprefix html/,$(HtmlPaths)))
 
 all: $(HtmlFiles)
+
+define copysrchtml
+html/$(1).html: src/$(1).html
+	install -m 0644 $$< $$@
+
+html/$(1).html: | $(dir html/$(1))
+
+endef
+
+$(eval \
+	$(foreach f,$(SrcHtmlFiles),$(call copysrchtml,$(f))))
+
 
 define ensurepath
 html/$(1).html: src/$(1).tex
@@ -42,7 +55,7 @@ html/$(1).html: | $(dir html/$(1))
 endef
 
 $(eval \
-	$(foreach f,$(TexFiles),$(call ensurepath,$(f))))
+	$(foreach f,$(SrcTexFiles),$(call ensurepath,$(f))))
 
 $(HtmlPaths):
 	mkdir -p $@
