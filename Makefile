@@ -7,6 +7,7 @@ tex2web = tex2web
 
 SrcHtmlFiles = \
 	tut/gentoo-install \
+	tut/install \
 
 SrcTexFiles = \
 	index \
@@ -19,7 +20,6 @@ SrcTexFiles = \
 	tut/prelim \
 	tut/qemu \
 	tut/pdfscan \
-	tut/install \
 	tut/z3 \
 
 
