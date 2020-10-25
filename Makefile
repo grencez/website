@@ -10,6 +10,7 @@ SrcHtmlFiles = \
 	tut/install \
 	tut/pdfscan \
 	tut/ssh \
+	tut/z3 \
 
 SrcTexFiles = \
 	index \
@@ -20,7 +21,6 @@ SrcTexFiles = \
 	tut/spin \
 	tut/prelim \
 	tut/qemu \
-	tut/z3 \
 
 
 HtmlPaths = \
