@@ -9,13 +9,13 @@ SrcHtmlFiles = \
 	tut/gentoo-install \
 	tut/install \
 	tut/pdfscan \
+	tut/ssh \
 
 SrcTexFiles = \
 	index \
 	selfstabiliz/index \
 	tut/encrypt \
 	tut/git \
-	tut/ssh \
 	tut/ssl \
 	tut/spin \
 	tut/prelim \
