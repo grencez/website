@@ -9,6 +9,7 @@ SrcHtmlFiles = \
 	tut/gentoo-install \
 	tut/install \
 	tut/pdfscan \
+	tut/spin \
 	tut/ssh \
 	tut/z3 \
 
@@ -18,7 +19,6 @@ SrcTexFiles = \
 	tut/encrypt \
 	tut/git \
 	tut/ssl \
-	tut/spin \
 	tut/prelim \
 	tut/qemu \
 
